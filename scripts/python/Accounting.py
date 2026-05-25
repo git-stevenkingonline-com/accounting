@@ -264,8 +264,8 @@ class SheetInfo():
 # Info about errors to help find them on the sheet
 ########################################################################################################################
 class ErrorInfo:
-    def __init__(self, index, date, message, from_acct, to_acct, amount):
-        self.index = index
+    def __init__(self, row, date, message, from_acct, to_acct, amount):
+        self.row = row
         self.date = date
         self.message = message
         self.from_acct = from_acct
@@ -614,7 +614,7 @@ class ReportGeneratorBase():
                 error = "Bad TO"
 
             return ErrorInfo(
-                entry.index,
+                entry.index + 1, # row is index plus one
                 entry.date,
                 f"{error} - {entry.trans}",
                 from_acct,
@@ -644,12 +644,10 @@ class ReportGeneratorBase():
         balances = {}
 
         for report_entry in self.report.entries:
-            from_entry = self.create_account_balance_entry(report_entry, report_entry.from_acct, self.calculate_trans_amt)
-            self.add_balance_entry(balances, from_entry)
+            self.create_and_add_balance_entry(balances, report_entry, report_entry.from_acct, self.calculate_trans_amt)
 
             if report_entry.from_acct != report_entry.to_acct:
-                to_entry = self.create_account_balance_entry(report_entry, report_entry.to_acct, self.calculate_trans_amt)
-                self.add_balance_entry(balances, to_entry)
+                self.create_and_add_balance_entry(balances, report_entry, report_entry.to_acct, self.calculate_trans_amt)
 
             for acct_name, trans_amt_calculator in self.custom_accounts:
                 custom_entry = self.create_account_balance_entry(report_entry, acct_name, trans_amt_calculator)
@@ -668,6 +666,11 @@ class ReportGeneratorBase():
             logger.with_keys(logging_acct = logging_acct).trace("Logging account not in balances")
 
         self.report.balances = balances
+
+    def create_and_add_balance_entry(self, balances, report_entry, acct, calculate_trans_amt):
+        if acct in self.accounts.accounts:
+            balance_entry = self.create_account_balance_entry(report_entry, acct, calculate_trans_amt)
+            self.add_balance_entry(balances, balance_entry)
 
     def calculate_extrema(self, balances):
         for account, entries in balances.items():
@@ -956,7 +959,7 @@ class ReportUpdaterBase():
         data_array = DataArrayHelper.create_empty_data_array(6, message_count)
 
         for error_index, error in enumerate(self.errors):
-            data_array[error_index][0] = error.index
+            data_array[error_index][0] = error.row
             data_array[error_index][1] = error.date
             data_array[error_index][2] = error.message
             data_array[error_index][3] = error.from_acct
