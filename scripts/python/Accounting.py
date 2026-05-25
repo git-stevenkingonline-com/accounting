@@ -1197,45 +1197,6 @@ class ReportUpdaterBase():
         for short_index in short_indexes:
             self.set_color_by_position(short_color, self._ENTRY_COL_AMOUNT, short_index)
 
-
-    def validate(self):
-        pass
-
-    def set_color_by_position(self, color, start_col, start_row, end_col = None, end_row = None, toggle = False):
-        SheetHelper.set_range_background_color(self.sheet, color, start_col, start_row, end_col, end_row, toggle)
-
-    def get_account_names_array(self, used_range_address):
-        account_names_range = self.sheet.getCellRangeByPosition(
-            self._BALANCES_COL_FIRST,
-            0,
-            used_range_address.EndColumn,
-            0
-        )
-
-        return account_names_range.DataArray
-
-    def toggle_processing_indicator(self):
-        indicator_color = ReportColors.NeutralHighlight
-        self.set_color_by_position(indicator_color, self._ENTRY_COL_TRANS, 0, toggle = True)
-
-
-class BalReportUpdater(ReportUpdaterBase):
-    def __init__(self, logger, controller, report_sheet, report_generator):
-        super().__init__(logger, controller, report_sheet, report_generator)
-
-        self.logger = self.logger.with_keys(class_name = "BalReportUpdater")
-        logger = logger.with_keys(method="__init__")
-
-        logger.trace("BalReportUpdater __init__ start")
-
-
-        logger.trace("BalReportUpdater __init__ end")
-
-    def apply_formatting(self, used_range_address):
-        super().apply_formatting(used_range_address)
-
-        logger = self.logger.with_keys(method = "apply_formatting")
-
         report_entries = self.entries
         reconciled_entries = [entry for entry in report_entries if entry.rec == 1]
         unreconciled_entries = [entry for entry in report_entries if entry.rec != 1]
@@ -1269,6 +1230,40 @@ class BalReportUpdater(ReportUpdaterBase):
                         self._ENTRY_COL_REC,
                         entry.index,
                     )
+
+
+    def validate(self):
+        pass
+
+    def set_color_by_position(self, color, start_col, start_row, end_col = None, end_row = None, toggle = False):
+        SheetHelper.set_range_background_color(self.sheet, color, start_col, start_row, end_col, end_row, toggle)
+
+    def get_account_names_array(self, used_range_address):
+        account_names_range = self.sheet.getCellRangeByPosition(
+            self._BALANCES_COL_FIRST,
+            0,
+            used_range_address.EndColumn,
+            0
+        )
+
+        return account_names_range.DataArray
+
+    def toggle_processing_indicator(self):
+        indicator_color = ReportColors.NeutralHighlight
+        self.set_color_by_position(indicator_color, self._ENTRY_COL_TRANS, 0, toggle = True)
+
+
+class BalReportUpdater(ReportUpdaterBase):
+    def __init__(self, logger, controller, report_sheet, report_generator):
+        super().__init__(logger, controller, report_sheet, report_generator)
+
+        self.logger = self.logger.with_keys(class_name = "BalReportUpdater")
+        logger = logger.with_keys(method="__init__")
+
+        logger.trace("BalReportUpdater __init__ start")
+
+
+        logger.trace("BalReportUpdater __init__ end")
 
     def validate(self):
         super().validate()
