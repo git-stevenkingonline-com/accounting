@@ -603,6 +603,10 @@ class ReportGeneratorBase():
                 logger.with_keys(journal_entry = vars(journal_entry)).trace("Original Journal Entry")
 
     def validate_account(self, entry, name, is_debit):
+        name_required = isinstance(entry.amount_dollars, numbers.Number)
+        if name_required and (name is None or name == ""):
+            name = "<blank>"
+        
         if name is not None and name != "" and name not in self.accounts.accounts:
             if is_debit:
                 from_acct = name
@@ -619,7 +623,7 @@ class ReportGeneratorBase():
                 f"{error} - {entry.trans}",
                 from_acct,
                 to_acct,
-                ""
+                entry.amount_dollars
             )
 
     def date_translate(self, date):
